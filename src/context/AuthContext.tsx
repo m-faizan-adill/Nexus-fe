@@ -17,14 +17,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   // Check for stored user on initial load
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+  //   if (storedUser) {
+  //     setUser(JSON.parse(storedUser));
+  //   }
+  //   setIsLoading(false);
+  // }, []);
   useEffect(() => {
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
-  }, []);
+    const initAuth = async () => {
+      const token = localStorage.getItem("token");
 
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data } = await api.get("/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setUser(data.user);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+      } catch (error) {
+        localStorage.removeItem("token");
+        localStorage.removeItem(USER_STORAGE_KEY);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+  
   // Mock login function - in a real app, this would make an API call
   const login = async (email: string, password: string, role: UserRole): Promise<void> => {
     setIsLoading(true);
