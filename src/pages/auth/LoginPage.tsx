@@ -35,10 +35,10 @@ export const LoginPage: React.FC = () => {
   const fillDemoCredentials = (userRole: UserRole) => {
     if (userRole === 'entrepreneur') {
       setEmail('sarah@techwave.io');
-      setPassword('password123');
+      setPassword('Faizan@');
     } else {
       setEmail('michael@vcinnovate.com');
-      setPassword('password123');
+      setPassword('Faizan@');
     }
     setRole(userRole);
   };
@@ -138,7 +138,7 @@ export const LoginPage: React.FC = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                <a href="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
                   Forgot your password?
                 </a>
               </div>
