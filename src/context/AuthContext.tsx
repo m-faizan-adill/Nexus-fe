@@ -26,19 +26,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // }, []);
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        const { data } = await api.get("/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const { data } = await api.get("/auth/me");
 
         setUser(data.user);
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
@@ -52,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initAuth();
   }, []);
-  
+
   // Mock login function - in a real app, this would make an API call
   const login = async (email: string, password: string, role: UserRole): Promise<void> => {
     setIsLoading(true);
@@ -78,7 +67,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(data.user);
 
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
-
       localStorage.setItem("token", data.token);
 
       toast.success("Successfully logged in!");
@@ -128,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(data.user);
       // localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
       toast.success('Account created successfully!');
     } catch (error: any) {
       // toast.error((error as Error).message);
@@ -144,22 +133,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const forgotPassword = async (email: string): Promise<void> => {
     try {
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Check if user exists
-      const user = users.find(u => u.email === email);
-      if (!user) {
-        throw new Error('No account found with this email');
-      }
+      // const user = users.find(u => u.email === email);
+      // if (!user) {
+      //   throw new Error('No account found with this email');
+      // }
 
       // Generate reset token (in a real app, this would be a secure token)
-      const resetToken = Math.random().toString(36).substring(2, 15);
-      localStorage.setItem(RESET_TOKEN_KEY, resetToken);
+      // const resetToken = Math.random().toString(36).substring(2, 15);
+      // localStorage.setItem(RESET_TOKEN_KEY, resetToken);
+      await api.post("/auth/forgot-password", { email });
 
       // In a real app, this would send an email
       toast.success('Password reset instructions sent to your email');
-    } catch (error) {
-      toast.error((error as Error).message);
+    } catch (error: any) {
+      // toast.error((error as Error).message);
+      toast.error(error.response?.data?.message || "Something went wrong");
       throw error;
     }
   };
@@ -168,19 +159,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resetPassword = async (token: string, newPassword: string): Promise<void> => {
     try {
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Verify token
-      const storedToken = localStorage.getItem(RESET_TOKEN_KEY);
-      if (token !== storedToken) {
-        throw new Error('Invalid or expired reset token');
-      }
+      // const storedToken = localStorage.getItem(RESET_TOKEN_KEY);
+      // if (token !== storedToken) {
+      //   throw new Error('Invalid or expired reset token');
+      // }
+      await api.post("/auth/reset-password", { token, newPassword });
 
       // In a real app, this would update the user's password in the database
-      localStorage.removeItem(RESET_TOKEN_KEY);
+      // localStorage.removeItem(RESET_TOKEN_KEY);
       toast.success('Password reset successfully');
-    } catch (error) {
-      toast.error((error as Error).message);
+    } catch (error: any) {
+      // toast.error((error as Error).message);
+      toast.error(error.response?.data?.message || "Something went wrong");
       throw error;
     }
   };
@@ -189,6 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = (): void => {
     setUser(null);
     localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem("token");
     toast.success('Logged out successfully');
   };
 
